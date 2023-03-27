@@ -35,6 +35,7 @@ func main() {
 		router.StaticFS("/static", http.FS(staticFiles))
 
 		// 主路由
+		router.POST("/api/v1/files", FilesController)
 		router.POST("/api/v1/texts", TextsController)
 		router.GET("/uploads/:path", UploadsController)
 		router.GET("/api/v1/addresses", AddressesController)
@@ -176,4 +177,36 @@ func QrcodeController(c *gin.Context) {
 	} else {
 		c.Status(http.StatusBadRequest)
 	}
+}
+
+func FilesController(c *gin.Context) {
+	// 获取前端上传文件
+	file, err := c.FormFile("raw")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	exe, err := os.Executable()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	dir := filepath.Dir(exe)
+
+	filename := uuid.New().String()
+	uploads := filepath.Join(dir, "uploads")
+
+	err = os.MkdirAll(uploads, os.ModePerm)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fullpath := path.Join("uploads", filename+filepath.Ext(file.Filename))
+	fileErr := c.SaveUploadedFile(file, filepath.Join(dir, fullpath))
+
+	if fileErr != nil {
+		log.Fatal(err)
+	}
+
+	c.JSON(http.StatusOK, gin.H{"url": "/" + fullpath})
 }
