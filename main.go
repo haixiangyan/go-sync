@@ -4,6 +4,7 @@ import (
 	"embed"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/skip2/go-qrcode"
 	"github.com/zserge/lorca"
 	"io/fs"
 	"log"
@@ -37,6 +38,7 @@ func main() {
 		router.POST("/api/v1/texts", TextsController)
 		router.GET("/uploads/:path", UploadsController)
 		router.GET("/api/v1/addresses", AddressesController)
+		router.GET("/api/v1/qrcodes", QrcodeController)
 
 		// 404
 		router.NoRoute(func(c *gin.Context) {
@@ -159,5 +161,19 @@ func UploadsController(c *gin.Context) {
 		c.File(target)
 	} else {
 		c.Status(http.StatusNotFound)
+	}
+}
+
+func QrcodeController(c *gin.Context) {
+	if content := c.Query("content"); content != "" {
+		png, err := qrcode.Encode(content, qrcode.Medium, 256)
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		c.Data(http.StatusOK, "image/png", png)
+	} else {
+		c.Status(http.StatusBadRequest)
 	}
 }
