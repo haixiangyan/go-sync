@@ -7,6 +7,7 @@ import (
 	"github.com/zserge/lorca"
 	"io/fs"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -34,6 +35,7 @@ func main() {
 
 		// 主路由
 		router.POST("/api/v1/texts", TextsController)
+		router.GET("/api/v1/addresses", AddressesController)
 
 		// 404
 		router.NoRoute(func(c *gin.Context) {
@@ -115,4 +117,20 @@ func TextsController(c *gin.Context) {
 
 		c.JSON(http.StatusOK, gin.H{"url": "/" + fullpath})
 	}
+}
+
+func AddressesController(c *gin.Context) {
+	addrs, _ := net.InterfaceAddrs()
+
+	var result []string
+
+	for _, address := range addrs {
+		if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
+			if ipnet.IP.To4() != nil {
+				result = append(result, ipnet.IP.String())
+			}
+		}
+	}
+
+	c.JSON(http.StatusOK, gin.H{"addresses": result})
 }
