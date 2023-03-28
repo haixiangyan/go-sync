@@ -1,15 +1,26 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useState } from "react";
 import styled from "styled-components";
 import {
   Form,
   showUploadingDialog,
   showUploadFileSuccessDialog,
   uploadFile,
-} from "../../pages/home/components";
+} from "./components";
 import { AppContext } from "../../shared/app_context";
-export const UploadScreenshotForm = () => {
+
+export const UploadFileForm = () => {
   const context = useContext(AppContext);
-  const _uploadFile = async (file) => {
+  const [boxClass, setBoxClass] = useState("default");
+  const onDragOver = (e) => {
+    e.preventDefault();
+    setBoxClass("dragging");
+  };
+  const onDragLeave = (e) => {
+    setBoxClass("default");
+  };
+  const onDrop = async (e) => {
+    e.preventDefault();
+    const file = e.dataTransfer?.items?.[0]?.getAsFile();
     if (!file) return;
     const type = file.type || "unknown";
     showUploadingDialog();
@@ -22,31 +33,33 @@ export const UploadScreenshotForm = () => {
           `http://${addr}:27149${url}`
         )}`,
     });
-  }
-  const onPaste = (e) => {
-    const { items: [item] } = e.clipboardData;
-    _uploadFile(item?.getAsFile())
   };
-  useEffect(() => {
-    window.addEventListener("paste", onPaste);
-    return () => {
-      window.removeEventListener("paste", onPaste);
-    };
-  }, []);
   const onChange = async (e) => {
-    _uploadFile(e.target?.files?.[0])
+    const file = e.target?.files?.[0];
+    if (!file) return;
+    const type = file.type || "unknown";
+    showUploadingDialog();
+    const { data: { url } } = await uploadFile(file);
+    showUploadFileSuccessDialog({
+      context,
+      content: (addr) =>
+        addr &&
+        `http://${addr}:27149/static/downloads?type=${type}&url=${encodeURIComponent(
+          `http://${addr}:27149${url}`
+        )}`,
+    });
   };
   return (
     <Form className="uploadForm">
       <div className="row">
-        <Box>
-          <FileInput
-            type="file"
-            value=""
-            onChange={onChange}
-            accept="image/*;capture=camera"
-          />
-          <p>点击选择图片 或 直接粘贴图片</p>
+        <Box
+          onDrop={onDrop}
+          onDragOver={onDragOver}
+          onDragLeave={onDragLeave}
+          className={boxClass}
+        >
+          <FileInput type="file" value="" onChange={onChange} />
+          <p>点击打开文件 或 拖拽文件至此</p>
         </Box>
       </div>
     </Form>

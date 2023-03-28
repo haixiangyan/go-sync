@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build --base ./",
-    "lint": "eslint --ext .jsx --ext .js --ext .ts --ext .tsx ./src",
+    "build": "tsc && vite build --base ",
+    "lint": "eslint --ext .jsx --ext .js --ext .ts --ext .tsx src",
     "serve": "vite preview"
   },
   "dependencies": {

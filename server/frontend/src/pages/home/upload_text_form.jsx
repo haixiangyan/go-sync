@@ -6,7 +6,7 @@ import {
   showUploadingDialog,
   showUploadTextSuccessDialog,
   uploadText,
-} from "../../pages/home/components";
+} from "./components";
 import { AppContext } from "../../shared/app_context";
 import { Center } from "../../components/center";
 
