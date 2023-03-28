@@ -3,7 +3,9 @@ package server
 import (
 	"embed"
 	"github.com/gin-gonic/gin"
+	"github.com/haixiangyan/go-sync/server/config"
 	"github.com/haixiangyan/go-sync/server/controller"
+	"github.com/haixiangyan/go-sync/server/ws"
 	"io/fs"
 	"log"
 	"net/http"
@@ -14,7 +16,7 @@ import (
 var FS embed.FS
 
 func Run() {
-	port := "27149"
+	port := config.GetPort()
 
 	gin.SetMode(gin.DebugMode)
 
@@ -25,12 +27,18 @@ func Run() {
 	// 静态文件前缀处理
 	router.StaticFS("/static", http.FS(staticFiles))
 
+	hub := ws.NewHub()
+	go hub.Run()
+
 	// 主路由
 	router.POST("/api/v1/files", controller.FilesController)
 	router.POST("/api/v1/texts", controller.TextsController)
 	router.GET("/uploads/:path", controller.UploadsController)
 	router.GET("/api/v1/addresses", controller.AddressesController)
 	router.GET("/api/v1/qrcodes", controller.QrcodeController)
+	router.GET("/ws", func(context *gin.Context) {
+		ws.HttpController(context, hub)
+	})
 
 	// 404
 	router.NoRoute(func(c *gin.Context) {

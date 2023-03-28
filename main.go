@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/haixiangyan/go-sync/server"
+	"github.com/haixiangyan/go-sync/server/config"
 	"github.com/zserge/lorca"
 	"os"
 	"os/signal"
@@ -19,7 +20,7 @@ func main() {
 }
 
 func startBrowser() (ui lorca.UI) {
-	port := "27149"
+	port := config.GetPort()
 
 	// 生成新窗口
 	ui, _ = lorca.New("http://127.0.0.1:"+port+"/static/index.html", "", 800, 600, "--disable-sync", "--disable-translate", "--remote-allow-origins=*")
