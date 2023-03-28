@@ -24,6 +24,8 @@ import (
 var FS embed.FS
 
 func main() {
+	port := "27149"
+
 	go func() {
 		gin.SetMode(gin.DebugMode)
 
@@ -65,12 +67,12 @@ func main() {
 			}
 		})
 
-		router.Run(":8080")
+		router.Run(":" + port)
 	}()
 
 	// 生成新窗口
 	var ui lorca.UI
-	ui, _ = lorca.New("http://127.0.0.1:8080/static/index.html", "", 800, 600, "--disable-sync", "--disable-translate", "--remote-allow-origins=*")
+	ui, _ = lorca.New("http://127.0.0.1:"+port+"/static/index.html", "", 800, 600, "--disable-sync", "--disable-translate", "--remote-allow-origins=*")
 
 	// 创建一个操作系统 Channel
 	chSignal := make(chan os.Signal, 1)
